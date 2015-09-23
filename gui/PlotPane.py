@@ -31,7 +31,7 @@ class PlotPane(QWidget):
         self.axes.plot(x_list, y_list)
         self.figure.canvas.draw()
 
-def draw(x_list=None, y_list=None):
+def draw_2d_plot(x_list=None, y_list=None):
     app = QApplication(sys.argv)
     plot = PlotPane()
     plot.refresh_plot(x_list, y_list)
