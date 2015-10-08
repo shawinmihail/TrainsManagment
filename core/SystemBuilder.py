@@ -16,6 +16,9 @@ class SystemBuilder:
     def _launch_cost_func(route): return (1000 + 75 * len(route)) * (2+random())
 
     @staticmethod
+    def _storage_cost_func(): return 5 + random() * 5
+
+    @staticmethod
     def _growth_coef_func(): return 4 * (random() * random()) + 2 * random() + 0.5
 
     @staticmethod
@@ -97,7 +100,7 @@ class SystemBuilder:
             SystemBuilder.routes_scheme.add_path(route.route_list)
 
     @staticmethod
-    def set_routes_to_loads_growthes():
+    def find_routes_of_load_growthes():
 
         def is_slice_in_list(l, l0):
             len_s = len(l)
@@ -124,23 +127,43 @@ class SystemBuilder:
                 rating, route_num = find_better_route(coeff.way_list[sum_rating:])
                 sum_rating += rating
                 route_num_list.append(route_num)
+            coeff.route_index_list = route_num_list
             print(route_num_list)
+            for route_num in route_num_list:
+                print(route_num_list.index(route_num))
+                SystemBuilder.routes[route_num].load_growth_list.append(
+                    {"coeff": coeff, "yard": route_num_list.index(route_num)})
 
-
-                
-                 
     @staticmethod
     def get_random_element(list1):
         index = int(random() * len(list1)) + 1
         return list1[index]
 
+    @staticmethod
+    def set_random_launch_costs():
+        for route in SystemBuilder.routes:
+            route.cost_of_launch = SystemBuilder._launch_cost_func(route)
+
+    @staticmethod
+    def set_random_storage_costs():
+        nx.set_node_attributes(SystemBuilder.scheme, "storage_cost", None)
+        for num in SystemBuilder.scheme.nodes():
+            SystemBuilder.scheme.node[num]["storage_cost"] = SystemBuilder._storage_cost_func()
+
+    @staticmethod
+    def create_random_system():
+        SystemBuilder.build_random_brunches(14)
+        SystemBuilder.build_random_routes(10, 6)
+        SystemBuilder.create_routes_scheme()
+        SystemBuilder.set_random_loads(10)
+        SystemBuilder.find_routes_of_load_growthes()
+
+    @staticmethod
+    def plot_sheme():
+        nx.draw_networkx(SystemBuilder.scheme, with_labels=True)
+        plt.axis('off')
+        plt.show()
+
 
 if __name__ == '__main__':
-    SystemBuilder.build_random_brunches(12)
-    SystemBuilder.build_random_routes(10, 3)
-    SystemBuilder.create_routes_scheme()
-    SystemBuilder.set_random_loads(10)
-    SystemBuilder.set_routes_to_loads_growthes()
-    nx.draw_networkx(SystemBuilder.scheme, with_labels=True)
-    limits = plt.axis('off')
-    plt.show()
+    SystemBuilder.create_random_system()
