@@ -6,6 +6,10 @@ from core.Objects import Route, GrowthCoeff
 
 class SystemBuilder:
 
+    ATTRIBUTE_GROWTH_LIST = "growth_list"
+    ATTRIBUTE_STORAGE_PRICE = "storage_cost"
+    ATTRIBUTE_TIME_IN_WAY = "time_in_way"
+
     scheme = nx.Graph()
     routes_scheme = nx.Graph()
 
@@ -25,15 +29,17 @@ class SystemBuilder:
     def _time_distance_func(): return 0.2 * random() + 0.03
 
     @staticmethod
+    def _period_func(): return 5 + int(random() * 16)
+
+    @staticmethod
     def build_random_brunches(len, first_number=1, second_number=2):
         drop_len_func = lambda len: int(len/4)
         brunch_prob = 0.5
         brunch_list = list()
 
         for k in range(len-1):
-            SystemBuilder.scheme.add_edge(first_number, second_number,
-                                          weight=1, time_distance= SystemBuilder._time_distance_func()
-                                          )
+            SystemBuilder.scheme.add_edge(first_number, second_number, weight=1)
+            SystemBuilder.scheme[first_number][second_number][SystemBuilder.ATTRIBUTE_TIME_IN_WAY] =  SystemBuilder._time_distance_func()
             if random() < brunch_prob:
                 brunch_list.append(first_number)
             first_number = second_number
@@ -49,9 +55,10 @@ class SystemBuilder:
             SystemBuilder.build_random_brunches(
                 drop_len_func(len), first_number=number, second_number=SystemBuilder.build_random_brunches.max)
 
-        nx.set_node_attributes(SystemBuilder.scheme, "growth_list", None)
+        attr_name = SystemBuilder.ATTRIBUTE_GROWTH_LIST
+        nx.set_node_attributes(SystemBuilder.scheme, attr_name, None)
         for num in SystemBuilder.scheme.nodes():
-            SystemBuilder.scheme.node[num]["growth_list"] = list()
+            SystemBuilder.scheme.node[num][attr_name] = list()
 
     @staticmethod
     def build_random_routes(attempts_num, min_len):
@@ -88,7 +95,8 @@ class SystemBuilder:
                         new_growth_coeff = GrowthCoeff(SystemBuilder._growth_coef_func(), way_list)
                         destination_is_founded = True
                         SystemBuilder.growth_coeffs.append(new_growth_coeff)
-                        SystemBuilder.scheme.node[dispatch_st_num]['growth_list'].append(new_growth_coeff)
+                        attr_name = SystemBuilder.ATTRIBUTE_GROWTH_LIST
+                        SystemBuilder.scheme.node[dispatch_st_num][attr_name].append(new_growth_coeff)
                     except nx.exception.NetworkXError:
                         pass
                     except nx.exception.NetworkXNoPath:
@@ -121,18 +129,26 @@ class SystemBuilder:
             return max(rating_list), rating_list.index(max(rating_list))
 
         for coeff in SystemBuilder.growth_coeffs:
+            disp = coeff.way_list[0]
+            dest = coeff.way_list[-1]
+            head = disp
             sum_rating = 0
             route_num_list = list()
-            while sum_rating != len(coeff.way_list):
-                rating, route_num = find_better_route(coeff.way_list[sum_rating:])
-                sum_rating += rating
+            way_phases_list = list()
+            iterations_counter = 0
+            while head != dest:
+                iterations_counter += 1
+                assert iterations_counter < 999
+                way_part = coeff.way_list[sum_rating:]
+                rating, route_num = find_better_route(way_part)
+                way_phases_list.append(way_part[:rating])
+                head = way_part[rating-1]
                 route_num_list.append(route_num)
+                sum_rating += rating -1
             coeff.route_index_list = route_num_list
-            print(route_num_list)
+            coeff.way_phases_list = way_phases_list
             for route_num in route_num_list:
-                print(route_num_list.index(route_num))
-                SystemBuilder.routes[route_num].load_growth_list.append(
-                    {"coeff": coeff, "yard": route_num_list.index(route_num)})
+                SystemBuilder.routes[route_num].add_to_growth_coeffs_list(coeff, route_num_list.index(route_num))
 
     @staticmethod
     def get_random_element(list1):
@@ -142,21 +158,65 @@ class SystemBuilder:
     @staticmethod
     def set_random_launch_costs():
         for route in SystemBuilder.routes:
-            route.cost_of_launch = SystemBuilder._launch_cost_func(route)
+            route.cost_of_launch = SystemBuilder._launch_cost_func(route.route_list)
 
     @staticmethod
     def set_random_storage_costs():
-        nx.set_node_attributes(SystemBuilder.scheme, "storage_cost", None)
+        attr_name = SystemBuilder.ATTRIBUTE_STORAGE_PRICE
+        nx.set_node_attributes(SystemBuilder.scheme, attr_name, None)
         for num in SystemBuilder.scheme.nodes():
-            SystemBuilder.scheme.node[num]["storage_cost"] = SystemBuilder._storage_cost_func()
+            SystemBuilder.scheme.node[num][attr_name] = SystemBuilder._storage_cost_func()
+
+    @staticmethod
+    def set_random_launch_periods():
+        for route in SystemBuilder.routes:
+            route.period = SystemBuilder._period_func()
+
+    @staticmethod
+    def set_period_and_time_in_way_lists():
+        for route in SystemBuilder.routes:
+            for k in range(len(route.growth_coeffs_list)):
+                period_list = list()
+                time_in_way_list = list()
+                coeff = route.growth_coeffs_list[k][Route.COEFFICIENT_HEADER]
+
+                for i in range(len(coeff.route_index_list)):
+                    period_list.append(SystemBuilder.routes[i].period)
+                route.growth_coeffs_list[k][Route.PERIOD_LIST_HEADER] = period_list
+
+                for line in coeff.way_phases_list:
+                    time_in_way = 0
+                    for st_num in range(len(line)-1):
+                        time_in_way += SystemBuilder.scheme[st_num+1][st_num+2][SystemBuilder.ATTRIBUTE_TIME_IN_WAY]
+                    time_in_way_list.append(time_in_way)
+
+                route.growth_coeffs_list[k][Route.TIME_IN_WAY_LIST_HEADER] = time_in_way_list
+
+    @staticmethod
+    def change_periods_in(times):
+        for route in SystemBuilder.routes:
+            route.period *= times
+
+    @staticmethod
+    def remove_useless_routes():
+        pass
 
     @staticmethod
     def create_random_system():
         SystemBuilder.build_random_brunches(14)
         SystemBuilder.build_random_routes(10, 6)
         SystemBuilder.create_routes_scheme()
+        SystemBuilder.set_random_launch_periods()
         SystemBuilder.set_random_loads(10)
         SystemBuilder.find_routes_of_load_growthes()
+        SystemBuilder.set_random_storage_costs()
+        SystemBuilder.set_random_launch_costs()
+        SystemBuilder.set_period_and_time_in_way_lists()
+
+        # for coeff in SystemBuilder.growth_coeffs:
+        #     print(coeff)
+        #     print(coeff.way_phases_list)
+        #     print("---------------")
 
     @staticmethod
     def plot_sheme():

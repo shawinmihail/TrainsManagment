@@ -1,50 +1,95 @@
-
 from gui import PlotPane
+from core.Objects import Route, GrowthCoeff
 import math
+from core.SystemBuilder import SystemBuilder
 from random import random
 
-alpha = 1
-tau_list = [2, 3, 4, 5, 4, 3, 2]
-# tau_list = [10*random() for x in range(10)]
-delta_list = [3, 3, 1, 1, 1, 1]
+class IntervalCalculator:
 
-def positivator(x):
-    if x >= 0:
-        return x
-    else:
-        return 0
+    @staticmethod
+    def cut_negative_value(x):
+        if x >= 0:
+            return x
+        else:
+            return 0
 
+    @staticmethod
+    def dynamic_func(add_func, tau):
+        return lambda t: add_func(t) - add_func(tau * (math.modf(t/tau)[1]))
 
-def dynamic_func(add_func, tau):
-    return lambda t: add_func(t) - add_func(tau * (math.modf(t/tau)[1]))
+    @staticmethod
+    def next_add_func(add_func, tau, delta):
+        return lambda t: IntervalCalculator.cut_negative_value(add_func(tau * (math.modf((t-delta)/tau)[1])))
 
-def next_add_func(add_func, tau, delta):
-    return lambda t: positivator(add_func(tau * (math.modf((t-delta)/tau)[1])))
+    @staticmethod
+    def find_add_and_dynamic_func(coeff, index, tau_list, delta_list):
+        _add_func = lambda t: coeff*t
 
-def station_n_dynamic_funct(n, tau_list, delta_list):
-    _add_func = lambda t: alpha*t
+        for i in range(index):
+            _add_func = IntervalCalculator.next_add_func(_add_func, tau_list[i], delta_list[i])
 
-    for i in range(n):
-        _add_func = next_add_func(_add_func, tau_list[i], delta_list[i])
+        _dynamic_func = IntervalCalculator.dynamic_func(_add_func, tau_list[index])
+        return _add_func, _dynamic_func
 
-    _dynamic_func = dynamic_func(_add_func, tau_list[n])
+    @staticmethod
+    def calculate_routs_real_storage_costs(route, time_interval):
+        costs = 0
+        for dict1 in route.growth_coeffs_list:
+            growth_coeff = dict1[Route.COEFFICIENT_HEADER]
+            index = dict1[Route.INDEX_HEADER]
+            time_in_way_list = dict1[Route.TIME_IN_WAY_LIST_HEADER]
+            periods_list = dict1[Route.PERIOD_LIST_HEADER]
 
-    return _add_func, _dynamic_func
+            add_func, dynamic_func = IntervalCalculator.find_add_and_dynamic_func(
+                growth_coeff.coeff, index, periods_list, time_in_way_list)
+
+            for t in range(time_interval):
+                t = t * 0.1
+                x = dynamic_func(t)
+                costs += x * 0.1
+
+        return costs
+
+    @staticmethod
+    def calculate_total_real_storage_costs(time_interval):
+        sum = 0
+        for route in SystemBuilder.routes:
+            sum += IntervalCalculator.calculate_routs_real_storage_costs(route, time_interval)
+        return sum
+
+    @staticmethod
+    def calculate_period(route):
+        sum = 0
+        launch_price = route.cost_of_launch
+        for dict1 in route.growth_coeffs_list:
+            growth_coeff = dict1[Route.COEFFICIENT_HEADER]
+            index = dict1[Route.INDEX_HEADER]
+            base_station = growth_coeff.way_phases_list[index][0]
+            cost_price = SystemBuilder.scheme.node[base_station][SystemBuilder.ATTRIBUTE_STORAGE_PRICE]
+            sum += growth_coeff.coeff * cost_price * 0.5
+
+        if sum == 0:
+            period = -1
+        else:
+            period = math.sqrt(launch_price / sum)
+
+        return period
+
+    @staticmethod
+    def calculate_and_set_periods():
+        for route in SystemBuilder.routes:
+            period = IntervalCalculator.calculate_period(route)
+            route.period = period
 
 
 if __name__ == "__main__":
-    print(math.modf(15/2)[1])
-    # k = 1
-    # a, d = station_n_dynamic_funct(k, tau_list, delta_list)
-    # time = list()
-    # value = list()
-    # n = 100
-    # sum = 0
-    # for t in range(n):
-    #     t = t*0.1
-    #     time.append(t)
-    #     x = d(t)
-    #     sum += x
-    #     value.append(x)
-    # print(sum/(tau_list[k]*n))
-    # PlotPane.draw_2d_plot(time, value)
+    pass
+        # time = list()
+        # value = list()
+        # for t in range(9999):
+        #     t = t*0.1
+        #     time.append(t)
+        #     x = dynamic_func(t)
+        #     value.append(x)
+        # PlotPane.draw_2d_plot(time, value)
+        # return

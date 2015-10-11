@@ -1,10 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QApplication
-import matplotlib
-matplotlib.use("Qt5Agg")
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import rc
 rc('font', **{'family':'verdana'})
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import sys
 
 
@@ -37,3 +35,12 @@ def draw_2d_plot(x_list=None, y_list=None):
     plot.refresh_plot(x_list, y_list)
     plot.show()
     sys.exit(app.exec_())
+
+
+# def draw(x_list, y_list):
+#     figure = plt.figure()
+#     axes = figure.add_subplot(1, 1, 1)
+#     axes.xaxis.grid()
+#     axes.yaxis.grid()
+#     axes.plot(x_list, y_list)
+#     plt.show()
