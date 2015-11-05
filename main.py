@@ -1,24 +1,40 @@
-import matplotlib
-matplotlib.use("Qt5Agg")
-from core.SystemBuilder import SystemBuilder as SB
-from core.IntervalCalculator import IntervalCalculator as IC
-from gui import PlotPane
-import math
+# -*- coding: utf-8 -*-
+from RailwayObjects.Station import Station
+from RailwayObjects.Scheme import Scheme
+from RailwayObjects.Way import Way
+from RailwayObjects.Train import Train, Route
 
-k_list = list()
-v_list = list()
+stations = {Station("1"),
+            Station("2"),
+            Station("3"),
+            Station("4"),
+            Station("5"),
+            }
 
-SB.create_random_system()
-IC.calculate_and_set_periods()
-SB.change_periods_in(0.125)
-SB.set_period_and_time_in_way_lists()
-k = math.pow(2, -6)
-for i in range(9):
-    k_list.append(k)
-    v = IC.calculate_total_real_storage_costs(999)
-    v_list.append(v)
-    k *= 2
-    SB.change_periods_in(2)
-    SB.set_period_and_time_in_way_lists()
+ways = {Way({"1", "3"}, 1),
+        Way({"2", "3"}, 1),
+        Way({"4", "3"}, 1),
+        Way({"5", "3"}, 1),
+        }
 
-PlotPane.draw_2d_plot(k_list, v_list)
+scheme = Scheme(stations, ways)
+
+scheme.add_train_into_station("1", "pobeda")
+scheme.add_train_into_station("2", "poragenie")
+
+st1 = scheme.find_station_by_name("1")
+st2 = scheme.find_station_by_name("2")
+st3 = scheme.find_station_by_name("3")
+st4 = scheme.find_station_by_name("4")
+st5 = scheme.find_station_by_name("5")
+
+w13 = scheme.find_way_by_end_names("1", "3")
+w23 = scheme.find_way_by_end_names("5", "3")
+w43 = scheme.find_way_by_end_names("4", "3")
+w53 = scheme.find_way_by_end_names("5", "3")
+
+route1 = Route([w13, w53])
+route2 = Route([w23, w43])
+
+scheme.set_route_to_train("pobeda", route1)
+scheme.set_route_to_train("poragenie", route2)

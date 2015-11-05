@@ -1,7 +1,10 @@
+from random import random
+
 import networkx as nx
 import matplotlib.pyplot as plt
-from random import random
-from core.Objects import Route, GrowthCoeff
+
+from core import RandomFunctions
+from archive.Objects import Route, GrowthCoeff
 
 
 class SystemBuilder:
@@ -17,21 +20,6 @@ class SystemBuilder:
     growth_coeffs = list()
 
     @staticmethod
-    def _launch_cost_func(route): return (1000 + 75 * len(route)) * (2+random())
-
-    @staticmethod
-    def _storage_cost_func(): return 5 + random() * 5
-
-    @staticmethod
-    def _growth_coef_func(): return 4 * (random() * random()) + 2 * random() + 0.5
-
-    @staticmethod
-    def _time_distance_func(): return 0.2 * random() + 0.03
-
-    @staticmethod
-    def _period_func(): return 5 + int(random() * 16)
-
-    @staticmethod
     def build_random_brunches(len, first_number=1, second_number=2):
         drop_len_func = lambda len: int(len/4)
         brunch_prob = 0.5
@@ -39,7 +27,7 @@ class SystemBuilder:
 
         for k in range(len-1):
             SystemBuilder.scheme.add_edge(first_number, second_number, weight=1)
-            SystemBuilder.scheme[first_number][second_number][SystemBuilder.ATTRIBUTE_TIME_IN_WAY] =  SystemBuilder._time_distance_func()
+            SystemBuilder.scheme[first_number][second_number][SystemBuilder.ATTRIBUTE_TIME_IN_WAY] = RandomFunctions.time_distance_func()
             if random() < brunch_prob:
                 brunch_list.append(first_number)
             first_number = second_number
@@ -71,9 +59,16 @@ class SystemBuilder:
                 nx.bidirectional_dijkstra(SystemBuilder.scheme, first_station_number, second_station_number)
             if way_len >= min_len:
                 way_list = way_list + way_list[::-1][1:]
-                new_route = Route(way_list, SystemBuilder._launch_cost_func(way_list))
+                new_route = Route(way_list, RandomFunctions.launch_cost_func(way_list))
                 SystemBuilder.routes.append(new_route)
             k += 1
+
+        SystemBuilder._create_routes_scheme()
+
+    @staticmethod
+    def _create_routes_scheme():
+        for route in SystemBuilder.routes:
+            SystemBuilder.routes_scheme.add_path(route.route_list)
 
     @staticmethod
     def set_random_loads(max_for_each_route):
@@ -92,7 +87,7 @@ class SystemBuilder:
                     try:
                         way_length, way_list = nx.bidirectional_dijkstra(
                             SystemBuilder.routes_scheme, dispatch_st_num, destination_st_num)
-                        new_growth_coeff = GrowthCoeff(SystemBuilder._growth_coef_func(), way_list)
+                        new_growth_coeff = GrowthCoeff(RandomFunctions.growth_coef_func(), way_list)
                         destination_is_founded = True
                         SystemBuilder.growth_coeffs.append(new_growth_coeff)
                         attr_name = SystemBuilder.ATTRIBUTE_GROWTH_LIST
@@ -103,12 +98,7 @@ class SystemBuilder:
                         pass
 
     @staticmethod
-    def create_routes_scheme():
-        for route in SystemBuilder.routes:
-            SystemBuilder.routes_scheme.add_path(route.route_list)
-
-    @staticmethod
-    def find_routes_of_load_growthes():
+    def _find_routes_for_load_factories():
 
         def is_slice_in_list(l, l0):
             len_s = len(l)
@@ -151,26 +141,21 @@ class SystemBuilder:
                 SystemBuilder.routes[route_num].add_to_growth_coeffs_list(coeff, route_num_list.index(route_num))
 
     @staticmethod
-    def get_random_element(list1):
-        index = int(random() * len(list1)) + 1
-        return list1[index]
-
-    @staticmethod
     def set_random_launch_costs():
         for route in SystemBuilder.routes:
-            route.cost_of_launch = SystemBuilder._launch_cost_func(route.route_list)
+            route.cost_of_launch = RandomFunctions.launch_cost_func(route.route_list)
 
     @staticmethod
     def set_random_storage_costs():
         attr_name = SystemBuilder.ATTRIBUTE_STORAGE_PRICE
         nx.set_node_attributes(SystemBuilder.scheme, attr_name, None)
         for num in SystemBuilder.scheme.nodes():
-            SystemBuilder.scheme.node[num][attr_name] = SystemBuilder._storage_cost_func()
+            SystemBuilder.scheme.node[num][attr_name] = RandomFunctions.storage_cost_func()
 
     @staticmethod
     def set_random_launch_periods():
         for route in SystemBuilder.routes:
-            route.period = SystemBuilder._period_func()
+            route.period = RandomFunctions.period_func()
 
     @staticmethod
     def set_period_and_time_in_way_lists():
@@ -208,7 +193,7 @@ class SystemBuilder:
         SystemBuilder.create_routes_scheme()
         SystemBuilder.set_random_launch_periods()
         SystemBuilder.set_random_loads(10)
-        SystemBuilder.find_routes_of_load_growthes()
+        SystemBuilder.find_routes_for_load_factories()
         SystemBuilder.set_random_storage_costs()
         SystemBuilder.set_random_launch_costs()
         SystemBuilder.set_period_and_time_in_way_lists()
@@ -219,7 +204,7 @@ class SystemBuilder:
         #     print("---------------")
 
     @staticmethod
-    def plot_sheme():
+    def plot_scheme():
         nx.draw_networkx(SystemBuilder.scheme, with_labels=True)
         plt.axis('off')
         plt.show()

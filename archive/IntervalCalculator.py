@@ -1,8 +1,8 @@
-from gui import PlotPane
-from core.Objects import Route, GrowthCoeff
 import math
-from core.SystemBuilder import SystemBuilder
-from random import random
+
+from core.Objects import Route
+from archive.SystemBuilder import SystemBuilder
+
 
 class IntervalCalculator:
 
