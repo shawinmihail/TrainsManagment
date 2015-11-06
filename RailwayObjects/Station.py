@@ -8,5 +8,8 @@ class Station:
         self.name = name
         self.trains = set()
 
+    def __repr__(self):
+        return "Station\"%s\"" % str(self.name)
+
     def add_train(self, train):
         self.trains.add(train)

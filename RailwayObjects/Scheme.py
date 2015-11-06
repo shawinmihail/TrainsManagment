@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from RailwayObjects.Train import Train
+from RailwayObjects.Way import Way
 
 
 class Scheme:
@@ -7,11 +8,20 @@ class Scheme:
     stations = None
     ways = None
     trains = None
+    current_time = 0
 
-    def __init__(self, stations, ways):
+    def __init__(self, stations):
         self.stations = stations
-        self.ways = ways
+        self.ways = set()
         self.trains = set()
+
+    def set_way(self, time_to_pass, st_name1, st_name2):
+        st1 = self.find_station_by_name(st_name1)
+        st2 = self.find_station_by_name(st_name2)
+        if st1 is None or st2 is None:
+            raise Exception("No such stations")
+        way = Way(st1, st2, time_to_pass)
+        self.ways.add(way)
 
     def find_station_by_name(self, station_name):
         if len(self.stations) == 0:
@@ -31,51 +41,49 @@ class Scheme:
 
     def find_way_by_end_names(self, station_name1, station_name_2):
         if station_name1 == station_name_2:
-            raise Exception("same names!")
+            raise Exception("no way to same station!")
         if len(self.ways) == 0:
             raise Exception("No ways at all!")
         for way in self.ways:
-            pair = way.stations_on_ends
-            if station_name1 in pair and station_name_2 in pair:
+            st_names_on_ends = way.stations_on_ends_names()
+            if station_name1 in st_names_on_ends and station_name_2 in st_names_on_ends:
                 return way
         return None
 
-    # def verify_route(self, route):
-    #     for station1, station2 in zip(route.stations, route.stations[1:]):
-    #         result = self.find_way_by_end_names(station1.name, station2.name)
-    #         if result:
-    #             return True
-    #         else:
-    #             return False
+    def find_route_by_stations_names(self, stations_names):
+        route = list()
+        for station_name in stations_names:
+            station = self.find_station_by_name(station_name)
+            if station is None:
+                raise Exception("No such station!")
+            route.append(station)
+        return route
 
-    def verify_route(self, route):
-        for way in route.ways:
-            if way in self.ways:
-                return True
-            else:
-                return False
+    def add_train_by_route_names(self, train_name, route_by_names):
+        dispatch_name = route_by_names[0]
+        dispatch = self.find_station_by_name(dispatch_name)
+        if dispatch is None:
+            raise Exception("No such station")
 
-    def add_train_into_station(self, station_name, train_name):
-        dispatch = self.find_station_by_name(station_name)
-        if dispatch:
-            train = Train(train_name, dispatch)
-            dispatch.add_train(train)
-            self.trains.add(train)
-        else:
-            raise Exception("No such station!")
+        route = self.find_route_by_stations_names(route_by_names)
+        ways = self.find_ways_of_route(route)
+        train = Train(train_name, route, ways)
+        self.trains.add(train)
+        dispatch.add_train(train)
+        return train
 
-    def set_route_to_train(self, train_name, route):
-        train = self.find_train_by_name(train_name)
-        route_is_valid = self.verify_route(route)
-        if not route_is_valid:
-            raise Exception("Route is not valid!")
-        if train:
-            train.set_route(route)
-        else:
-            raise Exception("No such train!")
+    def find_ways_of_route(self, route):
+        ways = list()
+        for station1, station2 in zip(route, route[1:]):
+            way = self.find_way_by_end_names(station1.name, station2.name)
+            if way is None:
+                raise Exception("No way for the route")
+            ways.append(way)
+        return ways
 
-    def upgrade_trains_positions(self):
+    def update_trains_positions(self, dt=1):
         if len(self.trains) == 0:
             raise Exception("no trains at all!")
         for train in self.trains:
-            pass
+            train.update_position(dt, self.current_time)
+        self.current_time += dt
