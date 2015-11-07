@@ -9,7 +9,6 @@ class Train:
     ways = None
     position = None
     schedule = None
-    shift = None
 
     def __init__(self, name, route, ways):
         if len(route) < 2:
@@ -36,30 +35,19 @@ class Train:
             return "Train: %s, wait on %s" % \
                (self.name, dispatch)
 
-    def relaunch(self, shift):
-        if shift == 0:
-            self.shift = shift
-        else:
-            self.shift += shift
-            print(self.schedule[0])
-            self.position = copy(self.schedule[0])
-            self.schedule = list()
-            self.position.destination_index = None
+    def launch(self):
+        self.find_current_destination_index()
+
+    def reset(self):
+        self.schedule = list()
+        self.position.reset()
 
     def record_schedule(self, current_time):
         self.position.time = current_time
         self.schedule.append(copy(self.position))
 
     def update_position(self, dt, current_time):
-
-        if self.shift is not None:
-            if current_time >= self.shift:
-                self.find_current_destination_index()
-            else:
-                return
-            self.record_schedule(current_time)
-        else:
-            return
+        self.record_schedule(current_time)
 
         current_way = self.position.way()
         if current_way is None:
@@ -98,9 +86,9 @@ class Position:
     dispatch_index = None
     destination_index = None
     time_in_way = None
+    time = 0
     route = None
     ways = None
-    time = 0
 
     def __init__(self, dispatch_index, time_in_current_way, route, ways):
         self.dispatch_index = dispatch_index
@@ -133,3 +121,9 @@ class Position:
             if dispatch in way.stations_on_ends and destination in way.stations_on_ends:
                 return way
         raise Exception("go to wrong way!")
+
+    def reset(self):
+        self.dispatch_index = 0
+        self.destination_index = None
+        self.time_in_way = 0
+        self.time = 0

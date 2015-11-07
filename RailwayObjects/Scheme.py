@@ -81,9 +81,24 @@ class Scheme:
             ways.append(way)
         return ways
 
-    def update_trains_positions(self, dt=1):
+    def tick(self, dt=1):
         if len(self.trains) == 0:
             raise Exception("no trains at all!")
         for train in self.trains:
             train.update_position(dt, self.current_time)
         self.current_time += dt
+
+    def reset(self):
+        self.current_time = 0
+        if len(self.trains) == 0:
+            raise Exception("no trains at all!")
+        for train in self.trains:
+            train.reset()
+
+    def all_trains_has_arrived(self):
+        if len(self.trains) == 0:
+            raise Exception("no trains at all!")
+        has_arrived_list = list()
+        for train in self.trains:
+            has_arrived_list.append(train.has_arrived())
+        return min(has_arrived_list)
