@@ -80,6 +80,12 @@ class Train:
         else:
             return False
 
+    def ways_time_sum(self):
+        sum1 = 0
+        for way in self.ways:
+            sum1 += way.time_to_pass
+        return sum1
+
 
 class Position:
 
@@ -121,6 +127,11 @@ class Position:
             if dispatch in way.stations_on_ends and destination in way.stations_on_ends:
                 return way
         raise Exception("go to wrong way!")
+
+    def find_time_of_current_destination_arrival(self):
+        if self.way() is None:
+            return None
+        return self.way().time_to_pass - self.time_in_way
 
     def reset(self):
         self.dispatch_index = 0

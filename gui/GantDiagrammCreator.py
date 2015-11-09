@@ -12,30 +12,34 @@ def next_color():
 
 def create(scheme):
 
-    way_labels = list()
     way_list = list()
+    trains_list = list()
     for way in scheme.ways:
-        way_labels.append(str(way.stations_on_ends))
         way_list.append(way)
+    for train in scheme.trains:
+        trains_list.append(train)
+
+    way_labels = list()
+    for way in way_list:
+        way_labels.append(str(way.stations_on_ends))
 
     way_indexes = list()
     start_dates = list()
     end_dates = list()
     colors_list = list()
-    trains_list = list()
     trains_colors_list = list()
-    for train in scheme.trains:
+    for train in trains_list:
         train_color = next_color()
-        trains_list.append(train)
         trains_colors_list.append(train_color)
         schedule = train.schedule
         for position in schedule:
             if position.way() in way_list:
-                index = way_list.index(position.way())
-                start_dates.append(position.time)
-                end_dates.append(position.time + 1)
-                way_indexes.append(index)
-                colors_list.append(train_color)
+                if position.time_in_way != 0:
+                    index = way_list.index(position.way())
+                    way_indexes.append(index)
+                    start_dates.append(position.time - 1)
+                    end_dates.append(position.time)
+                    colors_list.append(train_color)
 
 
 

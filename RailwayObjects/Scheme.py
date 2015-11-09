@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from RailwayObjects.Train import Train
 from RailwayObjects.Way import Way
+from RailwayObjects.Station import Station
 
 
 class Scheme:
@@ -10,12 +11,18 @@ class Scheme:
     trains = None
     current_time = 0
 
-    def __init__(self, stations):
-        self.stations = stations
+    def __init__(self):
+        self.stations = set()
         self.ways = set()
         self.trains = set()
 
-    def set_way(self, time_to_pass, st_name1, st_name2):
+    def add_stations_by_names(self, stations_names, closes_times=None):
+        assert len(stations_names) == len(closes_times)
+        for name, close_time in zip(stations_names, closes_times):
+            station = Station(name, close_time)
+            self.stations.add(station)
+
+    def add_way(self, time_to_pass, st_name1, st_name2):
         st1 = self.find_station_by_name(st_name1)
         st2 = self.find_station_by_name(st_name2)
         if st1 is None or st2 is None:

@@ -12,10 +12,10 @@ def scheme1():
                 }
 
     scheme = Scheme(stations)
-    scheme.set_way(11, "1", "3")
-    scheme.set_way(12, "2", "3")
-    scheme.set_way(13, "4", "3")
-    scheme.set_way(14, "5", "3")
+    scheme.add_way(10, "1", "3")
+    scheme.add_way(10, "2", "3")
+    scheme.add_way(10, "4", "3")
+    scheme.add_way(10, "5", "3")
 
     # scheme.add_train_by_route_names("pobeda", ["1", "3", "5"])
     # scheme.add_train_by_route_names("lenin", ["2", "3", "4"])
