@@ -127,7 +127,7 @@ def calculate_scheme_params(name):
     print("avg")
     print(sum/len(result_dict))
 
-calculate_scheme_params("sw30")
+calculate_scheme_params("s50")
 
 
 # for k in range(9):

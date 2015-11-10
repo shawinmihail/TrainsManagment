@@ -17,10 +17,15 @@ class Scheme:
         self.trains = set()
 
     def add_stations_by_names(self, stations_names, closes_times=None):
-        assert len(stations_names) == len(closes_times)
-        for name, close_time in zip(stations_names, closes_times):
-            station = Station(name, close_time)
-            self.stations.add(station)
+        if closes_times is not None:
+            assert len(stations_names) == len(closes_times)
+            for name, close_time in zip(stations_names, closes_times):
+                station = Station(name, close_time)
+                self.stations.add(station)
+        else:
+                for name in stations_names:
+                    station = Station(name)
+                    self.stations.add(station)
 
     def add_way(self, time_to_pass, st_name1, st_name2):
         st1 = self.find_station_by_name(st_name1)

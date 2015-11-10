@@ -1,0 +1,6 @@
+stations
+st0;st9;st10;st1;st2;st3;st4;st5;st6;st11;st12;st7;st8;st13;st14
+ways
+27,st2,st14;99,st3,st0;51,st3,st11;92,st9,st12;50,st5,st4;68,st5,st4;93,st5,st13;49,st0,st10;79,st5,st8;81,st5,st6;75,st5,st10;102,st6,st11;43,st5,st10;106,st5,st6;97,st8,st11;61,st5,st11;66,st0,st11;43,st12,st1;80,st4,st12;81,st7,st14;21,st7,st4;20,st7,st1;50,st7,st4;39,st5,st8;109,st8,st4;108,st11,st13;40,st10,st1;113,st13,st1;82,st5,st10;44,st3,st13;80,st13,st1;34,st10,st13;81,st0,st1;80,st7,st14;119,st4,st14;30,st0,st1;45,st5,st0;65,st9,st4;25,st0,st13;89,st0,st13;43,st10,st2;102,st2,st12
+trains
+tr0-st12,st4,st8,st11,st3;tr12-st7,st4,st8,st4,st7,st4,st5,st4,st9;tr6-st14,st7,st4,st5;tr3-st0,st3,st0;tr9-st9,st4;tr1-st11,st8,st11,st3,st0,st13,st0,st1,st13;tr10-st4,st7,st4,st12,st1;tr4-st10,st5,st8;tr7-st8,st11,st3,st13,st1,st10,st0,st5,st4;tr13-st5,st10,st5,st10,st1;tr2-st1,st12,st2,st12;tr14-st12,st4,st9,st4,st7;tr8-st7,st14,st7,st14,st7,st4,st7,st14,st7;tr5-st8,st5,st10,st5,st0;tr11-st9,st12,st2

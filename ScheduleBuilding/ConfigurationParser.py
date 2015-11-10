@@ -57,14 +57,15 @@ class ConfigurationParser:
         trains_line = conf_file.readline().rstrip()
         trains_info = trains_line.split(";")
 
-        stations_names = list()
-        times = list()
-        for station_info in stations_info:
-            name, closes_times = station_info.split("-")
-            t1, t2 = closes_times.split(",")
-            stations_names.append(name)
-            times.append([[int(t1), int(t2)]])
-        scheme.add_stations_by_names(stations_names, times)
+        # stations_names = list()
+        # times = list()
+        # for station_info in stations_info:
+            # name, closes_times = station_info.split("-")
+            # name = station_info.split("-")
+            # t1, t2 = closes_times.split(",")
+            # stations_names.append(name)
+            # times.append([[int(t1), int(t2)]])
+        scheme.add_stations_by_names(stations_info)
 
         for way_info in ways_info:
             time, st1, st2 = way_info.split(",")
