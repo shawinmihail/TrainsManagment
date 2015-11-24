@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use("Qt5Agg")
 from archive.SystemBuilder import SystemBuilder as SB
 from archive.IntervalCalculator import IntervalCalculator as IC
-from gui import PlotPane
+from Gui import PlotPane
 import math
 
 k_list = list()

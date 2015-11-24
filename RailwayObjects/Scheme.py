@@ -16,24 +16,24 @@ class Scheme:
         self.ways = set()
         self.trains = set()
 
-    def add_stations_by_names(self, stations_names, closes_times=None):
-        if closes_times is not None:
-            assert len(stations_names) == len(closes_times)
-            for name, close_time in zip(stations_names, closes_times):
-                station = Station(name, close_time)
-                self.stations.add(station)
-        else:
-                for name in stations_names:
-                    station = Station(name)
-                    self.stations.add(station)
+    def add_station(self, name, closes_times_set):
+        station = Station(name, closes_times_set)
+        self.stations.add(station)
 
-    def add_way(self, time_to_pass, st_name1, st_name2):
+    def add_way(self, time_to_pass, st_name1, st_name2, direction_property):
         st1 = self.find_station_by_name(st_name1)
         st2 = self.find_station_by_name(st_name2)
         if st1 is None or st2 is None:
             raise Exception("No such stations")
-        way = Way(st1, st2, time_to_pass)
-        self.ways.add(way)
+        way = Way(st1, st2, time_to_pass, direction_property)
+        if self.way_is_ok(way):
+            self.ways.add(way)
+
+    def way_is_ok(self, way):
+        for existing_way in self.ways:
+            if way.stations == existing_way.stations:
+                return False
+        return True
 
     def find_station_by_name(self, station_name):
         if len(self.stations) == 0:
@@ -71,7 +71,7 @@ class Scheme:
             route.append(station)
         return route
 
-    def add_train_by_route_names(self, train_name, route_by_names):
+    def add_train(self, train_name, route_by_names):
         dispatch_name = route_by_names[0]
         dispatch = self.find_station_by_name(dispatch_name)
         if dispatch is None:
@@ -81,7 +81,6 @@ class Scheme:
         ways = self.find_ways_of_route(route)
         train = Train(train_name, route, ways)
         self.trains.add(train)
-        dispatch.add_train(train)
         return train
 
     def find_ways_of_route(self, route):
@@ -93,12 +92,14 @@ class Scheme:
             ways.append(way)
         return ways
 
-    def tick(self, dt=1):
-        if len(self.trains) == 0:
-            raise Exception("no trains at all!")
+    def tick(self):
+        # assert len(self.trains) > 0
+        assert len(self.stations) > 0
+        self.current_time += 1
+        for station in self.stations:
+            station.add_ordered_loads()
         for train in self.trains:
-            train.update_position(dt, self.current_time)
-        self.current_time += dt
+            train.update_position(self.current_time)
 
     def reset(self):
         self.current_time = 0
@@ -114,3 +115,19 @@ class Scheme:
         for train in self.trains:
             has_arrived_list.append(train.has_arrived())
         return min(has_arrived_list)
+
+    def number_of_one_directed_ways(self):
+        assert len(self.ways) > 0
+        res = 0
+        for way in self.ways:
+            if way.direct_property == Way.PROPERTY_ONE_DIRECT:
+                res += 1
+        return res
+
+    def number_of_two_directed_ways(self):
+        assert len(self.ways) > 0
+        res = 0
+        for way in self.ways:
+            if way.direct_property == Way.PROPERTY_TWO_DIRECT:
+                res += 1
+        return res

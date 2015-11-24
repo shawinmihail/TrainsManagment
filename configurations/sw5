@@ -1,6 +1,0 @@
-stations
-st3-365,628;st1-533,859;st4-417,655;st2-533,857;st0-279,434
-ways
-50,st3,st2;50,st3,st4;95,st2,st4;102,st3,st1;17,st1,st0;75,st1,st0;20,st3,st4;112,st4,st0;114,st1,st4;31,st4,st0;84,st2,st4;37,st2,st0;61,st3,st1;107,st2,st4;64,st2,st4
-trains
-tr3-st4,st3,st1,st4,st2,st4;tr4-st0,st2,st4,st1,st0,st2;tr0-st4,st2;tr1-st4,st0,st4,st2,st4,st1,st4,st0;tr2-st3,st1,st4,st3,st4,st3,st2

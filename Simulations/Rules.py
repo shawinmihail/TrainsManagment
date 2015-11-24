@@ -51,11 +51,11 @@ def short_first_way_rule(trains):
     trains_list = list()
     for train in trains:
         trains_list.append(train)
-    trains_list.sort(key=lambda x: x.ways[0].time_to_pass)
+    trains_list.sort(key=lambda x: x.position.ways[0].time_to_pass)
     return trains_list
 
 
-def short_summ_ways_rule(trains):
+def short_sum_ways_rule(trains):
 
     trains_list = list()
     for train in trains:
@@ -69,12 +69,12 @@ def long_first_way_rule(trains):
     trains_list = list()
     for train in trains:
         trains_list.append(train)
-    trains_list.sort(key=lambda x: x.ways[0].time_to_pass)
+    trains_list.sort(key=lambda x: x.position.ways[0].time_to_pass)
     trains_list.reverse()
     return trains_list
 
 
-def long_summ_ways_rule(trains):
+def long_sum_ways_rule(trains):
 
     trains_list = list()
     for train in trains:
@@ -85,11 +85,11 @@ def long_summ_ways_rule(trains):
 
 
 rules_dict = dict()
-rules_dict[long_summ_ways_rule.__name__] = long_summ_ways_rule
+rules_dict[long_sum_ways_rule.__name__] = long_sum_ways_rule
 rules_dict[random1_rule.__name__] = random1_rule
 rules_dict[random2_rule.__name__] = random2_rule
 rules_dict[random3_rule.__name__] = random3_rule
 rules_dict[name_rule.__name__] = name_rule
 rules_dict[short_first_way_rule.__name__] = short_first_way_rule
-rules_dict[short_summ_ways_rule.__name__] = short_summ_ways_rule
+rules_dict[short_sum_ways_rule.__name__] = short_sum_ways_rule
 rules_dict[long_first_way_rule.__name__] = long_first_way_rule

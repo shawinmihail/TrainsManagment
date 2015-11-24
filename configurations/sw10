@@ -1,6 +1,0 @@
-stations
-st2-540,823;st3-177,241;st4-491,761;st5-553,582;st6-525,768;st7-512,659;st8-110,430;st0-451,563;st9-493,647;st1-357,377
-ways
-119,st2,st8;97,st2,st5;68,st3,st9;19,st3,st8;96,st2,st4;24,st7,st4;100,st5,st4;94,st5,st8;55,st5,st6;28,st5,st4;94,st1,st6;85,st4,st6;89,st1,st6;101,st7,st6;96,st7,st8;50,st7,st1;93,st2,st0;84,st8,st1;112,st5,st8;95,st3,st8;42,st7,st8;53,st4,st0;74,st7,st0;99,st7,st0;37,st8,st0;107,st9,st4;92,st9,st1;44,st2,st8;96,st7,st1;36,st1,st4
-trains
-tr6-st9,st4,st1,st9,st1,st7,st1,st7,st0,st4;tr0-st7,st0,st8,st2,st8,st7,st8,st2;tr3-st5,st8,st3,st8,st3,st8,st3,st8,st3,st8;tr9-st5,st4,st9;tr4-st2,st4,st5,st4;tr1-st8,st0,st8,st3,st8,st1,st9,st4,st0,st4,st9,st3,st8;tr7-st5,st6,st1,st9,st3,st8,st5;tr8-st0,st7,st0;tr2-st9,st3,st9,st4,st5,st8,st1,st7,st1,st4,st5,st4;tr5-st4,st6,st5
