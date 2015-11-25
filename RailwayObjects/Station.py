@@ -6,7 +6,8 @@ class Station:
     close_times = None
     orders = None
     loads = None
-    storage_cost = None
+    storage_price = None
+    storage_costs = None
 
     def __init__(self, name, close_times):
         self.name = name
@@ -14,12 +15,13 @@ class Station:
         self.trains = set()
         self.orders = set()
         self.loads = set()
+        self.storage_costs = 0
 
     def __repr__(self):
         return "Station\"%s\"" % str(self.name)
 
-    def set_storage_cost(self, cost):
-        self.storage_cost = cost
+    def set_storage_price(self, cost):
+        self.storage_price = cost
 
     def add_linear_order(self, coeff, dest_st_name, train_name):
         order = LinearOrder(coeff, dest_st_name, train_name)
@@ -56,6 +58,12 @@ class Station:
                 own_load.remove(amount)
                 return
         assert False
+
+    def total_loads(self):
+        return sum([load.amount for load in self.loads])
+
+    def calculate_storage_costs(self):
+        self.storage_costs += self.storage_price * self.total_loads()
 
 
 class LinearOrder:

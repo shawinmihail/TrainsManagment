@@ -6,11 +6,12 @@ from Simulations.ConfigurationGenerator import ConfigurationGenerator
 from Simulations.ScheduleViewer import ScheduleViewer
 from datetime import datetime
 import math
+from copy import copy
 
 
 class ScheduleBuilder:
 
-    MIN_TRAINS_DELAY = 5
+    MIN_TRAINS_DELAY = 15
 
     @staticmethod
     def find_shift(trains_above, train):
@@ -28,7 +29,11 @@ class ScheduleBuilder:
 
             for other_train in trains_above:
                 other_schedule = other_train.schedule
-                other_position = other_schedule[t]
+                # TODO костыль
+                try:
+                    other_position = other_schedule[t]
+                except IndexError:
+                    continue
                 other_way = other_position.way()
                 if own_way == other_way:
                     assert own_way is not None
@@ -182,15 +187,22 @@ class ScheduleBuilder:
 
 class PeriodsCalculator:
 
-    # @staticmethod
-    # def generate_trains_set(scheme, finish_time):
-    #     trains_list = list()
-    #     period_dict = PeriodsCalculator.create_period_dict(scheme)
-    #     for t in range(finish_time):
-    #         for train_name, period in period_dict:
-    #             if t % period == 0 and t != 0:
-    #                 train = scheme.add_train(train_name)
-    #                 trains_list.append()
+    @staticmethod
+    def set_trains_according_calculated_periods(scheme, finish_time, change_periods_in=1):
+        result_scheme = copy(scheme)
+        result_scheme.trains = set()
+
+        period_dict = PeriodsCalculator.create_period_dict(scheme)
+        for t in range(finish_time):
+            for train, period in period_dict.items():
+                period *= change_periods_in
+                if t % period == 0 and t != 0:
+                    new_train = result_scheme.add_train(train.name, train.position.route_by_names())
+                    new_train.ready_time = t
+                    new_train.launch_cost = train.launch_cost
+                    new_train.launch()
+
+        return result_scheme, period_dict
 
     @staticmethod
     def create_period_dict(scheme):
@@ -198,69 +210,40 @@ class PeriodsCalculator:
         for train in scheme.trains:
             period = PeriodsCalculator.calculate_period_for_train(train)
             assert period > 0
-            period_dict[train.name] = period
+            period_dict[train] = period
         return period_dict
 
     @staticmethod
     def calculate_period_for_train(train):
         denominator = 0
         for station in train.position.route:
-            denominator += sum([order.coeff for order in station.orders]) * station.storage_cost
+            denominator += sum([order.coeff for order in station.orders]) * station.storage_price
         period = math.sqrt(2*train.launch_cost / denominator)
         return int(period)
 
 
-def delivery_test():
 
-    scheme = ConfigurationGenerator.create_random_scheme(25, 10)
-    first_train = scheme.find_train_by_name("tr0")
-    first_train.launch()
-    first_station = first_train.position.dispatch()
-    print(first_station.orders)
+now = datetime.now()
+scheme = ConfigurationGenerator.create_random_scheme(50, 1)
+scheme, periods = PeriodsCalculator.set_trains_according_calculated_periods(scheme, 1440 * 15)
+print(len(scheme.trains))
+print(periods)
+ScheduleBuilder.make_schedule(scheme, faster_ready_rule)
+ScheduleViewer.generate_csv_schedule(scheme, "MIPT-58")
 
-    ITERATIONS = 50
-    PERIOD = 10
-
-    for t in range(ITERATIONS):
-        if t % PERIOD == 0 and t != 0:
-            name = "tr0"
-            route_by_names = first_train.position.route_by_names()
-            new_train = scheme.add_train(name, route_by_names)
-            new_train.launch()
-
-        scheme.tick()
-        print(first_station.loads)
-        # print(first_train)
-
-
-def simple_delivery_test():
-
-    scheme = ConfigurationGenerator.create_random_scheme(2, 0)
-    st0 = scheme.find_station_by_name("st0")
-    st1 = scheme.find_station_by_name("st1")
-    st0.add_linear_order(1, "st1", "tr0")
-    tr0 = None
-
-    ITERATIONS = 30
-    PERIOD = 10
-
-    for t in range(ITERATIONS):
-
-        if t == 3:
-            tr0 = scheme.add_train("tr0", ["st0", "st1"])
-            tr0.launch()
-
-        print(t)
-        try:
-            print(tr0.loads)
-            print(tr0.position)
-        except:
-            pass
-        # print(st0.loads)
-
-        scheme.tick()
-
-scheme = ConfigurationGenerator.create_random_scheme(25, 10)
-print(PeriodsCalculator.create_period_dict(scheme))
-
-
+print("time of calculation")
+print((datetime.now() - now).total_seconds())
+print("periods")
+print(periods)
+print("trains launched")
+print(len(scheme.trains))
+print("one_direct_ways")
+print(scheme.number_of_one_directed_ways())
+print("two_direct_ways")
+print(scheme.number_of_two_directed_ways())
+print("trains_costs")
+print(sum([train.launch_cost for train in scheme.trains]))
+print("storage_costs")
+print(sum([station.storage_costs for station in scheme.stations]))
+print("simulation time, min")
+print(scheme.current_time)

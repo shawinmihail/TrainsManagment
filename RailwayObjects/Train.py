@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import copy
-from  RailwayObjects.Station import Load
+from RailwayObjects.Station import Load
 
 
 class Train:
@@ -23,8 +23,9 @@ class Train:
         dispatch = self.position.route[self.position.dispatch_index]
         time_in_way = self.position.time_in_way
         destination = self.position.destination()
-        return "Train: %s, Status: %s, dispatch %s, destination %s, time in way %s" % \
-            (self.name, self.position.status, dispatch, destination, time_in_way)
+        # return "Train: %s, Status: %s, dispatch %s, destination %s, time in way %s" % \
+        #     (self.name, self.position.status, dispatch, destination, time_in_way)
+        return self.name
 
     def set_launch_cost(self, launch_cost):
         self.launch_cost = launch_cost

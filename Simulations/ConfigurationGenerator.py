@@ -6,10 +6,10 @@ from RailwayObjects.Scheme import Scheme
 
 class ConfigurationGenerator:
 
-    STATIONS_PARAMS = {"suffix": "st", "close_times_amount": 1, "close_times_duration": 15, "close_time_gap": 30, "storage_cost": 1}
+    STATIONS_PARAMS = {"suffix": "st", "close_times_amount": 4, "close_times_duration": 30, "close_time_gap": 60, "storage_price": 0.05}
     TRAINS_PARAMS = {"suffix": "tr", "route_len/stations_num": 0.5, "launch_cost": 4000}
-    WAYS_PARAMS = {"links_number": 5, "time_to_pass": 10, "one_direct_ratio": 0.1}
-    ORDERS_PARAMS = {"linear_orders_number": 1, "amount": 0.2}
+    WAYS_PARAMS = {"links_number": 3, "time_to_pass": 60, "one_direct_ratio": 0.05}
+    ORDERS_PARAMS = {"linear_orders_number": 1, "amount": 0.0001}
 
     @staticmethod
     def add_stations(scheme, number):
@@ -97,14 +97,14 @@ class ConfigurationGenerator:
 
     @staticmethod
     def add_storage_and_launch_costs_randomly(scheme):
-        avg_storage_cost = ConfigurationGenerator.STATIONS_PARAMS["storage_cost"]
+        avg_storage_price = ConfigurationGenerator.STATIONS_PARAMS["storage_price"]
         avg_launch_cost = ConfigurationGenerator.TRAINS_PARAMS["launch_cost"]
         for station in scheme.stations:
-            cost = uniform(avg_storage_cost/2, avg_storage_cost*2)
-            station.set_storage_cost(cost)
+            price = uniform(avg_storage_price/2, avg_storage_price*2)
+            station.set_storage_price(price)
         for train in scheme.trains:
-            cost = uniform(avg_launch_cost/2, avg_launch_cost*2)
-            train.set_launch_cost(cost)
+            price = uniform(avg_launch_cost/2, avg_launch_cost*2)
+            train.set_launch_cost(price)
 
     @staticmethod
     def find_random_route(scheme, length):

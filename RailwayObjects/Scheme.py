@@ -100,6 +100,7 @@ class Scheme:
             station.add_ordered_loads()
         for train in self.trains:
             train.update_position(self.current_time)
+        self.calculate_storage_costs_on_each_station()
 
     def reset(self):
         self.current_time = 0
@@ -131,3 +132,8 @@ class Scheme:
             if way.direct_property == Way.PROPERTY_TWO_DIRECT:
                 res += 1
         return res
+
+    def calculate_storage_costs_on_each_station(self):
+        assert len(self.stations) > 0
+        for station in self.stations:
+            station.calculate_storage_costs()
