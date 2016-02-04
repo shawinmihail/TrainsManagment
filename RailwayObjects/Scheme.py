@@ -100,7 +100,7 @@ class Scheme:
             station.add_ordered_loads()
         for train in self.trains:
             train.update_position(self.current_time)
-        self.calculate_storage_costs_on_each_station()
+        # self.calculate_storage_costs_on_each_station()
 
     def reset(self):
         self.current_time = 0

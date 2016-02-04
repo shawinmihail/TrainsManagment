@@ -51,8 +51,8 @@ class Train:
         self.define_status()
         self.record_schedule(current_time)
 
-        if self.position.time_in_way == 0:
-                self.exchange_loads(self.position.dispatch())
+        # if self.position.time_in_way == 0:
+        #         self.exchange_loads(self.position.dispatch())
 
         if self.position.status == Position.STATUS_MOVING:
 
