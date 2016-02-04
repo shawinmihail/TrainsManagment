@@ -2,16 +2,17 @@
 from Simulations.Rules import *
 from Gui.GantDiagrammCreator import *
 from Simulations.ConfigurationParser import ConfigurationParser
-from Simulations.ConfigurationGenerator import ConfigurationGenerator
+from Simulations.ConfigurationGenerator import ConfigurationGenerator, SimpleConfigurationGenerator
 from Simulations.ScheduleViewer import ScheduleViewer
 from datetime import datetime
 import math
-from copy import copy
+from copy import copy, deepcopy
+from threading import Thread
 
 
 class ScheduleBuilder:
 
-    MIN_TRAINS_DELAY = 15
+    MIN_TRAINS_DELAY = 5
 
     @staticmethod
     def find_shift(trains_above, train):
@@ -91,12 +92,9 @@ class ScheduleBuilder:
             shift = ScheduleBuilder.simulate_train(scheme, trains_above, shifts_above, train, 0)
             shifts_above.append(shift)
             trains_above.append(train)
-            print("")
-            print("trains_was_calculated - ")
-            print(len(trains_above))
-
-        # for train in trains_by_priority:
-        #     print(train.schedule)
+            # print("")
+            # print("trains_was_calculated - ")
+            # print(len(trains_above))
 
     @staticmethod
     def simulate_train(scheme, trains_above, shifts_above, train, shift):
@@ -126,25 +124,33 @@ class ScheduleBuilder:
     def trains_has_arrived(trains):
          if len(trains) == 0:
             return True
-
          has_arrived_list = list()
          for train in trains:
              has_arrived_list.append(train.has_arrived())
          return min(has_arrived_list)
 
     @staticmethod
-    def calculate_scheme_params(name):
+    def calculate_scheme_on_rule(scheme, rule, rule_name, now):
+        ScheduleBuilder.make_schedule(scheme, rule)
+        result_time = scheme.current_time - 1
+        print(result_time)
+        print((datetime.now() - now).total_seconds())
+
+    @staticmethod
+    def calculate_scheme_on_all_rules_in_threads(scheme):
+        now = datetime.now()
+        for rule_name, rule in rules_dict.items():
+            worker = Thread(target=ScheduleBuilder.calculate_scheme_on_rule, args=[deepcopy(scheme), rule, rule_name, now], daemon=False)
+            worker.start()
+            # worker.join()
+
+    @staticmethod
+    def calculate_scheme_params(scheme):
         now = datetime.now()
         result_dict = dict()
 
         for rule_name, rule in rules_dict.items():
-
-            if rule_name != "random1_rule":
-                continue
-
             print(rule_name)
-            scheme = ConfigurationParser.load_configuration(name)
-
             ScheduleBuilder.make_schedule(scheme, rule)
             result_time = scheme.current_time - 1
             result_dict[rule_name] = result_time
@@ -164,11 +170,13 @@ class ScheduleBuilder:
                 best_result = value
                 best_rule = key
 
-        # calculate at the end with the best rule
-        # scheme = ConfigurationParser.load_configuration(name)
-        # ScheduleBuilder.make_schedule(scheme, rules_dict[best_rule])
-
         print("")
+        print("rules")
+        print(len(rules_dict))
+        print("stations")
+        print(len(scheme.stations))
+        print("trains")
+        print(len(scheme.trains))
         print("time of calculation")
         print((datetime.now() - now).total_seconds())
         print("best")
@@ -179,10 +187,15 @@ class ScheduleBuilder:
         print("worse")
         print(worse_rule)
         print(worse_result)
-        print("one_direct_ways")
-        print(scheme.number_of_one_directed_ways())
-        print("two_direct_ways")
-        print(scheme.number_of_two_directed_ways())
+        # print("one_direct_ways")
+        # print(scheme.number_of_one_directed_ways())
+        # print("two_direct_ways")
+        # print(scheme.number_of_two_directed_ways())
+
+
+scheme = SimpleConfigurationGenerator.create_prepared_scheme()
+ScheduleBuilder.calculate_scheme_on_all_rules_in_threads(scheme)
+# ScheduleBuilder.calculate_scheme_params(scheme)
 
 
 class PeriodsCalculator:
@@ -220,30 +233,3 @@ class PeriodsCalculator:
             denominator += sum([order.coeff for order in station.orders]) * station.storage_price
         period = math.sqrt(2*train.launch_cost / denominator)
         return int(period)
-
-
-
-now = datetime.now()
-scheme = ConfigurationGenerator.create_random_scheme(50, 1)
-scheme, periods = PeriodsCalculator.set_trains_according_calculated_periods(scheme, 1440 * 15)
-print(len(scheme.trains))
-print(periods)
-ScheduleBuilder.make_schedule(scheme, faster_ready_rule)
-ScheduleViewer.generate_csv_schedule(scheme, "MIPT-58")
-
-print("time of calculation")
-print((datetime.now() - now).total_seconds())
-print("periods")
-print(periods)
-print("trains launched")
-print(len(scheme.trains))
-print("one_direct_ways")
-print(scheme.number_of_one_directed_ways())
-print("two_direct_ways")
-print(scheme.number_of_two_directed_ways())
-print("trains_costs")
-print(sum([train.launch_cost for train in scheme.trains]))
-print("storage_costs")
-print(sum([station.storage_costs for station in scheme.stations]))
-print("simulation time, min")
-print(scheme.current_time)
