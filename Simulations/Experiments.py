@@ -8,6 +8,7 @@ from datetime import datetime
 import math
 from copy import copy, deepcopy
 from threading import Thread
+import multiprocessing as mp
 
 
 class ScheduleBuilder:
@@ -84,19 +85,6 @@ class ScheduleBuilder:
         return -1
 
     @staticmethod
-    def make_schedule(scheme, rule):
-        trains_above = list()
-        trains_by_priority = rule(scheme.trains)
-        shifts_above = list()
-        for train in trains_by_priority:
-            shift = ScheduleBuilder.simulate_train(scheme, trains_above, shifts_above, train, 0)
-            shifts_above.append(shift)
-            trains_above.append(train)
-            # print("")
-            # print("trains_was_calculated - ")
-            # print(len(trains_above))
-
-    @staticmethod
     def simulate_train(scheme, trains_above, shifts_above, train, shift):
         scheme.reset()
         # simulate trains above
@@ -130,22 +118,38 @@ class ScheduleBuilder:
          return min(has_arrived_list)
 
     @staticmethod
-    def calculate_scheme_on_rule(scheme, rule, rule_name, now):
-        ScheduleBuilder.make_schedule(scheme, rule)
-        result_time = scheme.current_time - 1
-        print(result_time)
+    def make_schedule(scheme, rule):
+        trains_above = list()
+        trains_by_priority = rule(scheme.trains)
+        shifts_above = list()
+        for train in trains_by_priority:
+            shift = ScheduleBuilder.simulate_train(scheme, trains_above, shifts_above, train, 0)
+            shifts_above.append(shift)
+            trains_above.append(train)
+            # print("")
+            # print("trains_was_calculated - ")
+            # print(len(trains_above))
+
+
+class Experimenter:
+
+    @staticmethod
+    def calculate_scheme_on_all_rules_multi_thread(scheme):
+        now = datetime.now()
+
+        workers = []
+        for rule_name, rule in rules_dict.items():
+            worker = mp.Process(target=calculate_scheme_on_rule, args=(deepcopy(scheme), rule))
+            workers.append(worker)
+            worker.start()
+
+        for worker in workers:
+            worker.join()
+
         print((datetime.now() - now).total_seconds())
 
     @staticmethod
-    def calculate_scheme_on_all_rules_in_threads(scheme):
-        now = datetime.now()
-        for rule_name, rule in rules_dict.items():
-            worker = Thread(target=ScheduleBuilder.calculate_scheme_on_rule, args=[deepcopy(scheme), rule, rule_name, now], daemon=False)
-            worker.start()
-            # worker.join()
-
-    @staticmethod
-    def calculate_scheme_params(scheme):
+    def calculate_scheme_on_all_rules_one_thread(scheme):
         now = datetime.now()
         result_dict = dict()
 
@@ -192,10 +196,10 @@ class ScheduleBuilder:
         # print("two_direct_ways")
         # print(scheme.number_of_two_directed_ways())
 
-
-scheme = SimpleConfigurationGenerator.create_prepared_scheme()
-ScheduleBuilder.calculate_scheme_on_all_rules_in_threads(scheme)
-# ScheduleBuilder.calculate_scheme_params(scheme)
+def calculate_scheme_on_rule(scheme, rule):
+        ScheduleBuilder.make_schedule(scheme, rule)
+        result_time = scheme.current_time - 1
+        print(result_time)
 
 
 class PeriodsCalculator:
@@ -233,3 +237,8 @@ class PeriodsCalculator:
             denominator += sum([order.coeff for order in station.orders]) * station.storage_price
         period = math.sqrt(2*train.launch_cost / denominator)
         return int(period)
+
+
+if __name__ == "__main__":
+    scheme = SimpleConfigurationGenerator.create_prepared_scheme()
+    Experimenter.calculate_scheme_on_all_rules_multi_thread(scheme)
