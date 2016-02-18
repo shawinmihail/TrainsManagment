@@ -1,6 +1,0 @@
-stations
-st6-[58,87],[19,36];st7-[61,70],[21,29];st8-[92,102],[32,55];st9-[40,47];st0-;st1-[32,45];st2-[38,58];st3-[50,66];st4-[45,57],[81,94];st5-[43,66]
-ways
-st1,st5-51-two_direct;st7,st4-85-two_direct;st8,st6-89-two_direct;st7,st4-105-two_direct;st1,st5-67-one_direct;st3,st1-114-two_direct;st9,st4-115-two_direct;st5,st8-125-two_direct;st0,st9-102-two_direct;st7,st4-70-two_direct;st7,st5-141-two_direct;st1,st0-141-two_direct;st4,st9-110-two_direct;st2,st1-88-two_direct;st6,st3-154-two_direct;st3,st7-136-two_direct
-trains
-tr6-st1,st5,st8,st5;tr3-st3,st1,st0,st9,st4;tr9-st2,st1,st3,st7;tr0-st3,st6;tr4-st7,st4;tr1-st7,st4,st7,st3,st7;tr7-st4,st7,st4;tr8-st4,st9,st0,st9;tr2-st3,st1,st0,st9,st4;tr5-st5,st8

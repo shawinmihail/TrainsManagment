@@ -67,7 +67,7 @@ class Scheme:
         for station_name in stations_names:
             station = self.find_station_by_name(station_name)
             if station is None:
-                raise Exception("No such station!")
+                raise Exception("No such station: " + station_name)
             route.append(station)
         return route
 

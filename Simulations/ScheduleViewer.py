@@ -2,6 +2,7 @@
 class ScheduleViewer:
 
     FOLDER = "../schedules/"
+    time_point_coef = 5.33
 
     @staticmethod
     def generate_csv_schedule(scheme, name, start_time=None):
@@ -23,7 +24,7 @@ class ScheduleViewer:
                     line += 1
                     if line > max_line:
                         max_line = line
-                    time = (start_time + timedelta(minutes=position.time)).strftime("%H:%M %d.%m")
+                    time = (start_time + timedelta(minutes=ScheduleViewer.time_point_coef * position.time)).strftime("%H:%M %d.%m")
                     table[(line, row)] = ("%s;%s" % (position.dispatch().name, time))
 
         txt = ""

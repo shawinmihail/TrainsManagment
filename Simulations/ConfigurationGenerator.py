@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from random import randint, uniform
-
+from RailwayObjects.Way import Way
 from RailwayObjects.Scheme import Scheme
 
 
 class ConfigurationGenerator:
 
-    STATIONS_PARAMS = {"suffix": "st", "close_times_amount": 4, "close_times_duration": 30, "close_time_gap": 60, "storage_price": 0.3}
-    TRAINS_PARAMS = {"suffix": "tr", "route_len/stations_num": 0.5, "launch_cost": 0}
-    WAYS_PARAMS = {"links_number": 3, "time_to_pass": 30, "one_direct_ratio": 0}
+    STATIONS_PARAMS = {"suffix": "st", "close_times_amount": 0, "close_times_duration": 0, "close_time_gap": 0, "storage_price": 0}
+    TRAINS_PARAMS = {"suffix": "tr", "route_len/stations_num": 0.3, "launch_cost": 0}
+    WAYS_PARAMS = {"links_number": 2, "time_to_pass": 45, "one_direct_ratio": 0.1}
     ORDERS_PARAMS = {"linear_orders_number": 0, "amount": 0}
 
     @staticmethod
@@ -34,7 +34,6 @@ class ConfigurationGenerator:
 
     @staticmethod
     def add_ways_randomly(scheme):
-        from RailwayObjects.Way import Way
         links_number = ConfigurationGenerator.WAYS_PARAMS["links_number"]
         avg_time_to_pass = ConfigurationGenerator.WAYS_PARAMS["time_to_pass"]
 
@@ -174,10 +173,10 @@ class SimpleConfigurationGenerator:
             st_name = suffix + str(n)
             scheme.add_station(st_name, set())
             if last_st_name is not None:
-                scheme.add_way(5, st_name, last_st_name, Way.PROPERTY_TWO_DIRECT)
+                scheme.add_way(randint(3, 12), st_name, last_st_name, Way.PROPERTY_TWO_DIRECT)
             else:
                 if attachment_st_name is not None:
-                    scheme.add_way(8, st_name, attachment_st_name, Way.PROPERTY_TWO_DIRECT)
+                    scheme.add_way(randint(3, 12), st_name, attachment_st_name, Way.PROPERTY_TWO_DIRECT)
             last_st_name = st_name
 
     @staticmethod
@@ -191,57 +190,116 @@ class SimpleConfigurationGenerator:
         return names_list
 
     @staticmethod
-    def create_prepared_scheme():
+    def create_scheme232(number_of_trains, number_of_one_direct_ways):
         scheme = Scheme()
 
-        SimpleConfigurationGenerator.add_brunch(scheme, "a", 50)
-        SimpleConfigurationGenerator.add_brunch(scheme, "b", 30, "a9")
-        SimpleConfigurationGenerator.add_brunch(scheme, "c", 30, "a19")
-        SimpleConfigurationGenerator.add_brunch(scheme, "d", 30, "a29")
-        SimpleConfigurationGenerator.add_brunch(scheme, "e", 30, "a39")
+        SimpleConfigurationGenerator.add_brunch(scheme, "a", 71)
+        SimpleConfigurationGenerator.add_brunch(scheme, "b", 41, "a10")
+        SimpleConfigurationGenerator.add_brunch(scheme, "c", 36, "a20")
+        SimpleConfigurationGenerator.add_brunch(scheme, "d", 51, "a40")
+        SimpleConfigurationGenerator.add_brunch(scheme, "e", 33, "a60")
 
-        a1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 6)
-        a2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 12)
-        a3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 6, 13)
-        a4 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 13, 21)
-        a5 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 12, 25)
-        a6 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 25, 30)
-        a7 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 30, 40)
-        a8 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 40, 45)
-        a9 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 35, 45)
+        a1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 40)
+        a2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 20, 50)
+        a3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 30, 70)
 
-        b1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 6)
-        b2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 6, 18)
-        b3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 12)
-        b4 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 12, 20)
-        b5 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 18, 29)
 
-        c1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 0, 6)
-        c2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 6, 18)
-        c3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 0, 12)
-        c4 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 12, 20)
-        c5 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 18, 29)
+        b1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 30)
+        b2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 10, 20)
+        b3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 15, 30)
 
-        d1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 0, 6)
-        d2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 6, 18)
+        c1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 0, 15)
+        c2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 0, 25)
+        c3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 20, 25)
+
+        d1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 0, 25)
+        d2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 20, 50)
         d3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 0, 12)
-        d4 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 12, 20)
-        d5 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 18, 29)
 
-        ab1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 9) + \
-              SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 3)
-        ab2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 16, 9) + \
+        ab = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 10) + \
               SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 10)
+        ac = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 20) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 0, 7)
+        ad = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 40) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 0, 15)
+        ae = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 60) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("e", 0, 10)
+        bad = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 10, 0) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 10, 40) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 0, 5)
 
-        route_list = [a1, a2, a3, a4, a5, a6, a7, a8, a9, b1, b2, b3, b4, b5, c1, c2, c3, c4, c5, d1, d2, d3, d4, d5, ab1, ab2]
 
-        for i in range(120):
+        route_list = [a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3, ab, ac, ad, ae, bad]
+
+        for i in range(number_of_trains):
             tr_name = "tr" + str(i)
             route = route_list[(i % len(route_list))]
             scheme.add_train(tr_name, route)
 
+        for i in range(number_of_one_direct_ways):
+            rand_index = randint(0, len(scheme.ways))
+            k = 0
+            for way in scheme.ways:
+                if k == rand_index:
+                    way.direct_property = Way.PROPERTY_ONE_DIRECT
+                k += 1
+
         return scheme
 
+    @staticmethod
+    def create_scheme88(number_of_trains, number_of_one_direct_ways):
+        scheme = Scheme()
 
-SimpleConfigurationGenerator.create_prepared_scheme()
+        SimpleConfigurationGenerator.add_brunch(scheme, "a", 22)
+        SimpleConfigurationGenerator.add_brunch(scheme, "b", 16, "a5")
+        SimpleConfigurationGenerator.add_brunch(scheme, "c", 11, "a10")
+        SimpleConfigurationGenerator.add_brunch(scheme, "d", 18, "a15")
+        SimpleConfigurationGenerator.add_brunch(scheme, "e", 21, "a20")
+
+        a1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 10)
+        a2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 10, 20)
+        a3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 7, 13)
+
+
+        b1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 7)
+        b2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 9)
+        b3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 2, 8)
+
+        c1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 2, 10)
+        c2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 1, 5)
+        c3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 8, 2)
+
+        d1 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 6, 13)
+        d2 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 17, 5)
+        d3 = SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 8, 0)
+
+        ab = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 5) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 0, 2)
+        ac = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 10) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("c", 0, 7)
+        ad = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 15) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 0, 5)
+        ae = SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 0, 20) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("e", 0, 10)
+        bad = SimpleConfigurationGenerator.create_route_by_names_in_branch("b", 3, 0) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("a", 5, 15) + \
+              SimpleConfigurationGenerator.create_route_by_names_in_branch("d", 0, 2)
+
+
+        route_list = [a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3, ab, ac, ad, ae, bad]
+
+        for i in range(number_of_trains):
+            tr_name = "tr" + str(i)
+            route = route_list[(i % len(route_list))]
+            scheme.add_train(tr_name, route)
+
+        for i in range(number_of_one_direct_ways):
+            rand_index = randint(0, len(scheme.ways))
+            k = 0
+            for way in scheme.ways:
+                if k == rand_index:
+                    way.direct_property = Way.PROPERTY_ONE_DIRECT
+                k += 1
+
+        return scheme
 

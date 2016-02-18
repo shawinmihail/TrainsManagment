@@ -7,8 +7,8 @@ from Simulations.ScheduleViewer import ScheduleViewer
 from datetime import datetime
 import math
 from copy import copy, deepcopy
-from threading import Thread
 import multiprocessing as mp
+from multiprocessing import Manager
 
 
 class ScheduleBuilder:
@@ -136,17 +136,19 @@ class Experimenter:
     @staticmethod
     def calculate_scheme_on_all_rules_multi_thread(scheme):
         now = datetime.now()
-
+        manager = Manager()
+        results = manager.dict()
         workers = []
         for rule_name, rule in rules_dict.items():
-            worker = mp.Process(target=calculate_scheme_on_rule, args=(deepcopy(scheme), rule))
+            worker = mp.Process(target=calculate_scheme_on_rule, args=(deepcopy(scheme), rule, results))
             workers.append(worker)
             worker.start()
 
         for worker in workers:
             worker.join()
 
-        print((datetime.now() - now).total_seconds())
+        print("\nncalculation time, s: " + str((datetime.now() - now).total_seconds()))
+        return results
 
     @staticmethod
     def calculate_scheme_on_all_rules_one_thread(scheme):
@@ -174,32 +176,40 @@ class Experimenter:
                 best_result = value
                 best_rule = key
 
-        print("")
-        print("rules")
-        print(len(rules_dict))
-        print("stations")
-        print(len(scheme.stations))
-        print("trains")
-        print(len(scheme.trains))
-        print("time of calculation")
-        print((datetime.now() - now).total_seconds())
-        print("best")
-        print(best_rule)
-        print(best_result)
-        print("avg")
-        print(sum/len(result_dict))
-        print("worse")
-        print(worse_rule)
-        print(worse_result)
-        # print("one_direct_ways")
-        # print(scheme.number_of_one_directed_ways())
-        # print("two_direct_ways")
-        # print(scheme.number_of_two_directed_ways())
+    @staticmethod
+    def make_report(scheme, results):
 
-def calculate_scheme_on_rule(scheme, rule):
-        ScheduleBuilder.make_schedule(scheme, rule)
-        result_time = scheme.current_time - 1
-        print(result_time)
+        sum = 0
+        best = 999999
+        worse = -1
+        better_scheme = None
+        for rule_name, resulting_scheme in results.items():
+            result = ScheduleViewer.time_point_coef * resulting_scheme.current_time
+            sum += result
+            if result < best:
+                best = result
+                better_scheme = resulting_scheme
+            if result > worse:
+                worse = result
+        avg = sum/len(rules_dict)
+
+        print("number of rules: " + str(len(rules_dict)))
+        print("number of stations: " + str(len(scheme.stations)))
+        print("number of trains: " + str(len(scheme.trains)))
+        print("number of one-direct ways: " + str(scheme.number_of_one_directed_ways()))
+        print("number of two-direct ways: " + str(scheme.number_of_two_directed_ways()))
+        print("difference best - worse, h: " + str(round((worse - best)/60, 2)))
+        print("")
+        print("best result: " + str(best))
+        print("worse result: " + str(worse))
+        print("avg result: " + str(int(avg)))
+
+        return better_scheme
+
+def calculate_scheme_on_rule(scheme, rule, results):
+    ScheduleBuilder.make_schedule(scheme, rule)
+    print(rule.__name__)
+    results[rule.__name__] = scheme
 
 
 class PeriodsCalculator:
@@ -240,5 +250,10 @@ class PeriodsCalculator:
 
 
 if __name__ == "__main__":
-    scheme = SimpleConfigurationGenerator.create_prepared_scheme()
-    Experimenter.calculate_scheme_on_all_rules_multi_thread(scheme)
+    scheme = SimpleConfigurationGenerator.create_scheme232(120, 45)
+    name = "232_60_0"
+    ConfigurationParser.save_configuration(scheme, name)
+    scheme = ConfigurationParser.load_configuration(name)
+    results = Experimenter.calculate_scheme_on_all_rules_multi_thread(scheme)
+    better_scheme = Experimenter.make_report(scheme, results)
+    ScheduleViewer.generate_csv_schedule(better_scheme, name)

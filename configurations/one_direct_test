@@ -1,6 +1,0 @@
-stations
-st1-;st2-;st3-
-ways
-st1,st2-10-one_direct;st2,st3-10-one_direct
-trains
-tr1-st1,st2,st3;tr2-st3,st2,st1
