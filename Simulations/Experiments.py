@@ -251,7 +251,7 @@ class PeriodsCalculator:
 
 if __name__ == "__main__":
     scheme = SimpleConfigurationGenerator.create_scheme232(120, 45)
-    name = "232_60_0"
+    name = "232_120_45"
     ConfigurationParser.save_configuration(scheme, name)
     scheme = ConfigurationParser.load_configuration(name)
     results = Experimenter.calculate_scheme_on_all_rules_multi_thread(scheme)
